@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+// --- Types ---
 type ScanResult = {
   id: string
   scan_id: string
@@ -14,7 +15,27 @@ type ScanResult = {
   sentiment_score: number
   local_seo_score: number
   recommendations: string[]
+  raw_data: RawData | null
   created_at: string
+}
+
+type RawData = {
+  technicalMetrics?: {
+    score: number
+    hasSchema: boolean
+    markdownFriendly: boolean
+    pageSpeed: number
+    entityDensity: number
+    recommendations: string[]
+  }
+  aiVisibilityMetrics?: {
+    score: number
+    sentimentScore: number
+    citations: number
+    queriesSent: string[]
+    responses: string[]
+  }
+  queriesSent?: string[]
 }
 
 type Scan = {
@@ -38,6 +59,7 @@ type ScanRow = {
   project: Pick<Project, 'id' | 'name' | 'user_id'>
 }
 
+// --- Page Component ---
 export default async function ScanDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
   const supabase = await createClient()
@@ -45,7 +67,6 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch scan with its project to verify ownership
   const { data: scan, error } = await supabase
     .from('scans')
     .select(`
@@ -58,17 +79,11 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
     .eq('id', id)
     .single() as { data: ScanRow | null; error: unknown }
 
-  if (error || !scan) {
-    notFound()
-  }
+  if (error || !scan) notFound()
 
-  // Ensure current user owns this scan's project
   const project = scan.project
-  if (project.user_id !== user.id) {
-    notFound()
-  }
+  if (project.user_id !== user.id) notFound()
 
-  // Fetch scan results
   const { data: results } = await supabase
     .from('scan_results')
     .select('*')
@@ -109,29 +124,29 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           </span>
         </div>
 
-        {/* Status: still processing */}
+        {/* Processing */}
         {scan.status === 'processing' && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
             <div className="text-4xl mb-2">🔄</div>
             <h2 className="text-xl font-semibold text-blue-900 mb-1">Scan in Progress</h2>
             <p className="text-blue-700 text-sm">
-              The scan is still running. This page will refresh automatically when complete.
+              The scan is running AI analysis. This page will refresh automatically when complete.
             </p>
           </div>
         )}
 
-        {/* Status: failed */}
+        {/* Failed */}
         {scan.status === 'failed' && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <div className="text-4xl mb-2">❌</div>
             <h2 className="text-xl font-semibold text-red-900 mb-1">Scan Failed</h2>
             <p className="text-red-700 text-sm">
-              Something went wrong during the scan. Please try running a new scan.
+              Something went wrong. Please try running a new scan.
             </p>
           </div>
         )}
 
-        {/* Status: completed — show results */}
+        {/* Completed */}
         {scan.status === 'completed' && projectResult && (
           <>
             {/* Score Cards */}
@@ -158,10 +173,83 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
               />
             </div>
 
+            {/* Technical Audit Details */}
+            {projectResult.raw_data?.technicalMetrics && (
+              <div className="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  🔍 Technical Audit Details
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Has Schema</p>
+                    <p className={`text-lg font-bold ${projectResult.raw_data.technicalMetrics.hasSchema ? 'text-green-600' : 'text-red-500'}`}>
+                      {projectResult.raw_data.technicalMetrics.hasSchema ? '✅ Yes' : '❌ No'}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Markdown Ready</p>
+                    <p className={`text-lg font-bold ${projectResult.raw_data.technicalMetrics.markdownFriendly ? 'text-green-600' : 'text-red-500'}`}>
+                      {projectResult.raw_data.technicalMetrics.markdownFriendly ? '✅ Yes' : '❌ No'}
+                    </p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Page Speed</p>
+                    <p className="text-lg font-bold text-gray-700">
+                      {projectResult.raw_data.technicalMetrics.pageSpeed}/100
+                    </p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Entity Density</p>
+                    <p className="text-lg font-bold text-gray-700">
+                      {projectResult.raw_data.technicalMetrics.entityDensity.toFixed(1)}
+                    </p>
+                  </div>
+                </div>
+                {projectResult.raw_data.technicalMetrics.recommendations?.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-medium text-gray-500 mb-1">Technical Recommendations:</p>
+                    <ul className="space-y-1">
+                      {projectResult.raw_data.technicalMetrics.recommendations.map((r, i) => (
+                        <li key={i} className="text-sm text-gray-700 flex gap-2">
+                          <span className="text-blue-500">•</span>{r}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* LLM Queries Sent */}
+            {projectResult.raw_data?.aiVisibilityMetrics?.queriesSent &&
+              projectResult.raw_data.aiVisibilityMetrics.queriesSent.length > 0 && (
+                <div className="bg-white rounded-lg shadow p-6 mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    🤖 LLM Queries Sent
+                  </h2>
+                  <p className="text-xs text-gray-500 mb-3">
+                    These are the actual queries sent to the LLM to test AI visibility:
+                  </p>
+                  <div className="space-y-2">
+                    {projectResult.raw_data.aiVisibilityMetrics.queriesSent.map((q, i) => (
+                      <div key={i} className="bg-gray-900 rounded-lg p-3">
+                        <p className="text-xs text-gray-400 mb-1">Query {i + 1}</p>
+                        <p className="text-sm text-green-400 font-mono">{q}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex gap-4 text-sm">
+                    <span className="text-gray-600">
+                      <span className="font-medium text-gray-900">{projectResult.raw_data.aiVisibilityMetrics.citations}</span> citations found
+                    </span>
+                  </div>
+                </div>
+              )}
+
             {/* Recommendations */}
             {projectResult.recommendations && projectResult.recommendations.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6 mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   📋 Recommendations
                 </h2>
                 <ul className="space-y-3">
@@ -178,7 +266,7 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
             {/* Competitor results */}
             {results && results.filter((r) => r.entity_type === 'competitor').length > 0 && (
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   🏢 Competitor Analysis
                 </h2>
                 <div className="overflow-x-auto">
@@ -195,21 +283,13 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
                     <tbody className="divide-y divide-gray-100">
                       {results
                         .filter((r) => r.entity_type === 'competitor')
-                        .map((r: ScanResult) => (
+                        .map((r) => (
                           <tr key={r.id}>
                             <td className="px-4 py-2 font-medium text-gray-900">{r.entity_id}</td>
-                            <td className="px-4 py-2">
-                              <ScoreBadge score={r.ai_visibility_score} />
-                            </td>
-                            <td className="px-4 py-2">
-                              <ScoreBadge score={r.geo_technical_score} />
-                            </td>
-                            <td className="px-4 py-2">
-                              <ScoreBadge score={r.sentiment_score} />
-                            </td>
-                            <td className="px-4 py-2">
-                              <ScoreBadge score={r.local_seo_score} />
-                            </td>
+                            <td className="px-4 py-2"><ScoreBadge score={r.ai_visibility_score} /></td>
+                            <td className="px-4 py-2"><ScoreBadge score={r.geo_technical_score} /></td>
+                            <td className="px-4 py-2"><ScoreBadge score={r.sentiment_score} /></td>
+                            <td className="px-4 py-2"><ScoreBadge score={r.local_seo_score} /></td>
                           </tr>
                         ))}
                     </tbody>
@@ -220,14 +300,14 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
           </>
         )}
 
-        {/* Completed but no results yet */}
+        {/* Completed but no results */}
         {scan.status === 'completed' && !projectResult && (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
             <p className="text-gray-600">No results data found for this scan.</p>
           </div>
         )}
 
-        {/* Run new scan from here */}
+        {/* Run new scan */}
         <div className="mt-8 flex justify-end">
           <Link
             href={`/projects/${scan.project_id}`}
@@ -241,6 +321,7 @@ export default async function ScanDetailPage({ params }: { params: { id: string 
   )
 }
 
+// --- Sub-components ---
 function ScoreCard({
   label,
   score,
@@ -264,10 +345,7 @@ function ScoreCard({
       <p className={`text-xs font-medium mb-1 ${text}`}>{label}</p>
       <p className={`text-2xl font-bold ${text}`}>{clampedScore}</p>
       <div className="mt-2 h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
-        <div
-          className={`h-full ${bar} rounded-full transition-all`}
-          style={{ width: `${clampedScore}%` }}
-        />
+        <div className={`h-full ${bar} rounded-full transition-all`} style={{ width: `${clampedScore}%` }} />
       </div>
     </div>
   )
@@ -276,14 +354,8 @@ function ScoreCard({
 function ScoreBadge({ score }: { score: number }) {
   const clampedScore = Math.min(100, Math.max(0, score))
   const color =
-    clampedScore >= 70
-      ? 'text-green-700 bg-green-100'
-      : clampedScore >= 40
-      ? 'text-yellow-700 bg-yellow-100'
-      : 'text-red-700 bg-red-100'
-  return (
-    <span className={`px-2 py-0.5 rounded text-xs font-medium ${color}`}>
-      {clampedScore}
-    </span>
-  )
+    clampedScore >= 70 ? 'text-green-700 bg-green-100'
+    : clampedScore >= 40 ? 'text-yellow-700 bg-yellow-100'
+    : 'text-red-700 bg-red-100'
+  return <span className={`px-2 py-0.5 rounded text-xs font-medium ${color}`}>{clampedScore}</span>
 }

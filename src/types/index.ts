@@ -64,6 +64,25 @@ export interface ScanResult {
   sentiment_score: number;
   local_seo_score: number;
   recommendations: string[];
-  raw_data: any;
+  raw_data: RawData | null;
   created_at: string;
+}
+
+export interface RawData {
+  technicalMetrics?: {
+    score: number;
+    hasSchema: boolean;
+    markdownFriendly: boolean;
+    pageSpeed: number;
+    entityDensity: number;
+    recommendations: string[];
+  };
+  aiVisibilityMetrics?: {
+    score: number;
+    sentimentScore: number;
+    citations: number;
+    queriesSent: string[];
+    responses: string[];
+  };
+  queriesSent?: string[];
 }
