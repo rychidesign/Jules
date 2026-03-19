@@ -6,10 +6,23 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { projectId } = await req.json()
 
+  if (!projectId || typeof projectId !== 'string') {
+    return NextResponse.json({ error: 'Invalid project ID' }, { status: 400 })
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { data: project, error } = await supabase
     .from('projects')
     .select('*, competitors(*)')
     .eq('id', projectId)
+    .eq('user_id', user.id)
     .single()
 
   if (error || !project) {
@@ -38,7 +51,7 @@ export async function POST(req: NextRequest) {
         targetKeywords: project.target_keywords || [],
         brandVariations: project.brand_variations || [],
         selectedModels: project.selected_models || ['gpt-4o'],
-        competitors: project.competitors.map((c: any) => c.url),
+        competitors: (project.competitors || []).map((c: { url: string }) => c.url),
       });
 
       // Update scan record and store results
