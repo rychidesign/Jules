@@ -1,0 +1,15 @@
+{
+  "Dashboard": {
+    "title": "My Projects",
+    "new_project": "New Project",
+    "no_projects": "No projects yet. Create your first one!"
+  },
+  "ProjectForm": {
+    "name": "Company Name",
+    "url": "Website URL",
+    "focus": "Focus",
+    "location": "Location",
+    "track_competitors": "Track competitors",
+    "create": "Create Project"
+  }
+}

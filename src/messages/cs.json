@@ -1,0 +1,15 @@
+{
+  "Dashboard": {
+    "title": "Moje projekty",
+    "new_project": "Nový projekt",
+    "no_projects": "Žádné projekty. Vytvořte svůj první!"
+  },
+  "ProjectForm": {
+    "name": "Název firmy",
+    "url": "Webová adresa",
+    "focus": "Zaměření",
+    "location": "Lokalita",
+    "track_competitors": "Sledovat konkurenty",
+    "create": "Vytvořit projekt"
+  }
+}
