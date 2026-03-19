@@ -10,3 +10,63 @@
 
  GET /projects/new 200 in 872ms (next.js: 131ms, proxy.ts: 298ms, application-code: 442ms)
  GET /login 200 in 92ms (next.js: 25ms, proxy.ts: 9ms, application-code: 58ms)
+ GET /login 200 in 743ms (next.js: 101ms, proxy.ts: 154ms, application-code: 488ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <LoadingBoundary name="login/" loading={null}>
+      <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <InnerLayoutRouter url="/login" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+              <SegmentViewNode type="page" pagePath="src/login/...">
+                <SegmentTrieNode>
+                <ClientPageRoot Component={function LoginPage} serverProvidedParams={{...}}>
+                  <LoginPage params={Promise} searchParams={Promise}>
+                    <div className="flex min-h...">
+                      <div className="w-full max...">
+                        <div>
+                        <form className="mt-8 space...">
+                          <div className="-space-y-p...">
+                            <div>
+                              <input
+                                id="email-address"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                required={true}
+                                className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 rin..."
+                                placeholder="Email address"
+                                value=""
+                                onChange={function onChange}
+-                               style={{caret-color:"transparent"}}
+                              >
+                            <div>
+                              <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                autoComplete="current-password"
+                                required={true}
+                                className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 rin..."
+                                placeholder="Password"
+                                value=""
+                                onChange={function onChange}
+-                               style={{caret-color:"transparent"}}
+                              >
+                          ...
+              ...
+            ...
+
+ GET / 307 in 825ms (next.js: 164ms, proxy.ts: 9ms, application-code: 653ms)
+ GET /login 200 in 90ms (next.js: 6ms, proxy.ts: 9ms, application-code: 75ms)
