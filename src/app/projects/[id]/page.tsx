@@ -1,12 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { RunNewScanButton } from './run-new-scan-button'
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProjectDetailsPage({ params }: { params: { id: string } }) {
   const { id } = await params
   const supabase = await createClient()
+
+  type ProjectCompetitor = {
+    id: string
+    name: string
+    url: string
+  }
+
+  type ProjectScan = {
+    id: string
+    created_at: string
+    status: 'pending' | 'processing' | 'completed' | 'failed'
+  }
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -31,9 +44,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
             >
               &larr; Back to Dashboard
             </Link>
-            <button className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500">
-              Run New Scan
-            </button>
+            <RunNewScanButton projectId={id} />
           </div>
         </div>
 
@@ -52,7 +63,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
             <h2 className="text-xl font-semibold mb-4 text-gray-900">Competitors</h2>
             {project.competitors && project.competitors.length > 0 ? (
               <ul className="divide-y divide-gray-200">
-                {project.competitors.map((comp: any) => (
+                {project.competitors.map((comp: ProjectCompetitor) => (
                   <li key={comp.id} className="py-2">
                     <p className="font-medium">{comp.name}</p>
                     <p className="text-sm text-gray-500">{comp.url}</p>
@@ -78,7 +89,7 @@ export default async function ProjectDetailsPage({ params }: { params: { id: str
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {project.scans.map((scan: any) => (
+                  {project.scans.map((scan: ProjectScan) => (
                     <tr key={scan.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(scan.created_at).toLocaleDateString()}
