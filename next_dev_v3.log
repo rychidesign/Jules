@@ -1,0 +1,12 @@
+
+> aio-geo-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env.local
+✓ Ready in 509ms
+
+ GET /projects/new 200 in 872ms (next.js: 131ms, proxy.ts: 298ms, application-code: 442ms)
+ GET /login 200 in 92ms (next.js: 25ms, proxy.ts: 9ms, application-code: 58ms)

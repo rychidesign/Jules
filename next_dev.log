@@ -69,3 +69,11 @@ https://react.dev/link/hydration-mismatch
 
  GET / 307 in 1495ms (next.js: 1254ms, proxy.ts: 9ms, application-code: 232ms)
  GET /login 200 in 80ms (next.js: 5ms, proxy.ts: 9ms, application-code: 67ms)
+  Reload env: .env.local
+✓ Compiled in 245ms
+ GET /login 200 in 395ms (next.js: 93ms, proxy.ts: 145ms, application-code: 156ms)
+ GET / 307 in 222ms (next.js: 38ms, proxy.ts: 10ms, application-code: 174ms)
+ GET /login 200 in 83ms (next.js: 5ms, proxy.ts: 9ms, application-code: 69ms)
+ GET /projects/new 200 in 1485ms (next.js: 1326ms, proxy.ts: 10ms, application-code: 149ms)
+ GET /projects/new 200 in 75ms (next.js: 5ms, proxy.ts: 9ms, application-code: 61ms)
+[?25h

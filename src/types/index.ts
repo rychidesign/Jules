@@ -7,6 +7,24 @@ export interface Profile {
   created_at: string;
 }
 
+export interface UserProfile {
+  id: string;
+  tier: Plan;
+  scans_used_this_month: number;
+  last_scan_reset_at: string;
+  created_at: string;
+}
+
+export interface TierLimit {
+  id: string;
+  tier: Plan;
+  max_projects: number;
+  max_competitors_per_project: number;
+  max_scans_per_month: number;
+  allowed_models: string[];
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;
@@ -15,6 +33,9 @@ export interface Project {
   focus: string;
   location: string;
   has_competitors: boolean;
+  target_keywords: string[];
+  brand_variations: string[];
+  selected_models: string[];
   created_at: string;
 }
 

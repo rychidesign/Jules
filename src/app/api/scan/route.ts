@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Run the graph (asynchronously)
-  // Note: In production, use a background worker or queue
   (async () => {
     try {
       const result = await app.invoke({
@@ -36,6 +35,9 @@ export async function POST(req: NextRequest) {
         url: project.url,
         focus: project.focus,
         location: project.location,
+        targetKeywords: project.target_keywords || [],
+        brandVariations: project.brand_variations || [],
+        selectedModels: project.selected_models || ['gpt-4o'],
         competitors: project.competitors.map((c: any) => c.url),
       });
 
@@ -57,8 +59,6 @@ export async function POST(req: NextRequest) {
           recommendations: result.recommendations,
         }
       ])
-
-      // Optionally handle competitors...
     } catch (e) {
       console.error("Scan failed:", e);
       await supabase

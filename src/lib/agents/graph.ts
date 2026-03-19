@@ -8,6 +8,9 @@ const AgentState = Annotation.Root({
   url: Annotation<string>,
   focus: Annotation<string>,
   location: Annotation<string>,
+  targetKeywords: Annotation<string[]>,
+  brandVariations: Annotation<string[]>,
+  selectedModels: Annotation<string[]>,
   competitors: Annotation<string[]>,
   technicalMetrics: Annotation<any>,
   aiVisibilityMetrics: Annotation<any>,
@@ -19,24 +22,24 @@ const AgentState = Annotation.Root({
 const competitorDiscoveryNode = async (state: typeof AgentState.State) => {
   console.log("Discovering competitors for:", state.url);
   // Implementation will use Search API in production
-  // Simulating discovery result
   return { competitors: ["competitor1.com", "competitor2.com"] };
 };
 
 const technicalAuditNode = async (state: typeof AgentState.State) => {
   console.log("Auditing website:", state.url);
   // Implementation will analyze technical SEO & GEO
-  return { technicalMetrics: { score: 85, issues: ["Missing Schema.org"] } };
+  return { technicalMetrics: { score: 85, hasSchema: true, markdownFriendly: true, pageSpeed: 90, entityDensity: 1.5 } };
 };
 
 const aiVisibilityNode = async (state: typeof AgentState.State) => {
   console.log("Testing AI visibility for:", state.url);
-  // Implementation will query LLMs
+  // Implementation will query selected models
   return { aiVisibilityMetrics: { score: 70, sentimentScore: 75, citations: 12 } };
 };
 
 const reportGeneratorNode = async (state: typeof AgentState.State) => {
   console.log("Generating report...");
+  // Logic from report-generator.ts
   return { recommendations: ["Add structured data", "Improve content for LLMs"] };
 };
 

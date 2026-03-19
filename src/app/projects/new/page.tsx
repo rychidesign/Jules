@@ -9,7 +9,10 @@ export default function NewProjectPage() {
   const [url, setUrl] = useState('')
   const [focus, setFocus] = useState('')
   const [location, setLocation] = useState('')
+  const [keywords, setKeywords] = useState('')
+  const [variations, setVariations] = useState('')
   const [hasCompetitors, setHasCompetitors] = useState(false)
+  const [selectedModels, setSelectedModels] = useState(['gpt-4o'])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -35,7 +38,10 @@ export default function NewProjectPage() {
           url,
           focus,
           location,
-          has_competitors: hasCompetitors
+          has_competitors: hasCompetitors,
+          target_keywords: keywords.split(',').map(k => k.trim()).filter(k => k),
+          brand_variations: variations.split(',').map(v => v.trim()).filter(v => v),
+          selected_models: selectedModels
         }
       ])
       .select()
@@ -75,7 +81,7 @@ export default function NewProjectPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Focus / Keywords</label>
+            <label className="block text-sm font-medium text-gray-700">Focus / Category</label>
             <input
               type="text"
               required
@@ -92,6 +98,26 @@ export default function NewProjectPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Target Keywords (comma separated)</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+              value={keywords}
+              onChange={(e) => setKeywords(e.target.value)}
+              placeholder="best pizza, pizza delivery, artisan pizza"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Brand Variations (comma separated)</label>
+            <input
+              type="text"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+              value={variations}
+              onChange={(e) => setVariations(e.target.value)}
+              placeholder="Pizza Place, PizzaPlace, Pizza Place Inc"
             />
           </div>
           <div className="flex items-center">
